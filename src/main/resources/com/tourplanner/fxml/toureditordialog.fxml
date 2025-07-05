@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      spacing="10" prefWidth="400">
+
+    <!-- Title -->
+    <Label text="Tour Editor" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+
+    <!-- Name field -->
+    <HBox spacing="5">
+        <Label text="Name:" minWidth="80"/>
+        <TextField fx:id="nameField" promptText="Tour name" HBox.hgrow="ALWAYS"/>
+    </HBox>
+
+    <!-- From/To fields -->
+    <HBox spacing="5">
+        <Label text="From:" minWidth="80"/>
+        <TextField fx:id="fromField" promptText="Start location" HBox.hgrow="ALWAYS"/>
+    </HBox>
+    <HBox spacing="5">
+        <Label text="To:" minWidth="80"/>
+        <TextField fx:id="toField" promptText="Destination" HBox.hgrow="ALWAYS"/>
+    </HBox>
+
+    <!-- Description field -->
+    <HBox spacing="5">
+        <Label text="Description:" minWidth="80"/>
+        <TextArea fx:id="descriptionField" promptText="Tour description" prefRowCount="3" HBox.hgrow="ALWAYS"/>
+    </HBox>
+
+    <!-- Transport type -->
+    <HBox spacing="5">
+        <Label text="Transport:" minWidth="80"/>
+        <ComboBox fx:id="transportTypeBox" prefWidth="150"/>
+    </HBox>
+
+
+
+</VBox>

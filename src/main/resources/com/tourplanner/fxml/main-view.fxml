@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.control.Button?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.tourplanner.ui.view.MainView">
+
+    <top>
+        <ToolBar>
+            <Button text="Home" onAction="#onShowHome"/>
+            <Button text="Tour Logs" onAction="#onShowLogs"/>
+            <Button text="Statistics" onAction="#onShowStatistics"/>
+            <Button text="Exit" onAction="#onExit"/>
+        </ToolBar>
+    </top>
+
+    <left>
+        <AnchorPane fx:id="leftContainer" prefWidth="230"/>
+    </left>
+
+    <center>
+        <AnchorPane fx:id="centerContainer"/>
+    </center>
+
+</BorderPane>

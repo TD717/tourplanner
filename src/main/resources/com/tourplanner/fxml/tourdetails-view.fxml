@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.Pane?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.tourplanner.ui.view.TourDetailsView"
+      spacing="12" style="-fx-padding: 20;">
+
+    <!-- Tour Details Header -->
+    <Label text="Tour Details" style="-fx-font-size: 24px; -fx-font-weight: bold;">
+        <padding><Insets bottom="10"/></padding>
+    </Label>
+
+    <!-- Tour Information -->
+    <VBox spacing="8">
+        <Label fx:id="tourNameLabel" style="-fx-font-size: 20px;" text="Select a tour to view details"/>
+        <Label fx:id="descriptionLabel" text="Description: No tour selected" wrapText="true"/>
+        <Label fx:id="transportLabel" text="Transport: --"/>
+        <Label fx:id="distanceLabel" text="Distance: -- km"/>
+        <Label fx:id="timeLabel" text="Estimated Time: --"/>
+    </VBox>
+
+    <!-- Map Section -->
+    <VBox spacing="5">
+        <Label text="Route Map:" style="-fx-font-weight: bold;"/>
+        <Pane fx:id="mapContainer" prefHeight="400" prefWidth="600" 
+              style="-fx-border-color: gray; -fx-border-width: 1;">
+            <ImageView fx:id="mapImage" fitHeight="400" preserveRatio="true" 
+                       style="-fx-border-color: gray; -fx-border-width: 1;"/>
+        </Pane>
+    </VBox>
+
+</VBox>

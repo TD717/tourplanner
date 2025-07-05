@@ -1,0 +1,315 @@
+@startuml TourPlanner Class Diagram
+
+!define RECTANGLE class
+
+package "Presentation Layer" {
+    class MainView {
+        - viewFactory: ViewFactory
+        - tourListView: TourListView
+        - tourLogView: TourLogView
+        - tourDetailsView: TourDetailsView
+        + setViewFactory(factory: ViewFactory)
+        + initialize()
+    }
+
+    class TourListView {
+        - viewModel: TourListViewModel
+        - tourList: ListView<TourDTO>
+        - searchField: TextField
+        - buttons: Button[]
+        + setViewModel(viewModel: TourListViewModel)
+        + onAdd()
+        + onEdit()
+        + onDelete()
+        + onSearch()
+    }
+
+    class TourLogView {
+        - viewModel: TourLogViewModel
+        - logTable: TableView<TourLogDTO>
+        - searchField: TextField
+        + setViewModel(viewModel: TourLogViewModel)
+        + onAdd()
+        + onEdit()
+        + onDelete()
+        + onSearch()
+    }
+
+    class TourDetailsView {
+        - routeService: RouteService
+        - mapView: WebView
+        + setRouteService(service: RouteService)
+        + displayTour(tour: TourDTO)
+    }
+
+    class ViewFactory {
+        - viewModelCache: Map<String, Object>
+        - stageCache: Map<String, Stage>
+        - tourService: TourService
+        - tourLogService: TourLogService
+        - routeService: RouteService
+        + createView(fxmlPath: String, viewModelClass: Class<T>): ViewPair
+        + createViewWithoutViewModel(fxmlPath: String): ViewPair
+        + createModalDialog(fxmlPath: String, viewModelClass: Class<T>, title: String, owner: Stage): Stage
+    }
+
+    abstract class BaseViewModel {
+        # logger: Logger
+        - title: StringProperty
+        - isLoading: BooleanProperty
+        - errorMessage: StringProperty
+        + initialize()
+        + dispose()
+        + loadData()
+        + refresh()
+        + setError(error: String)
+        + clearError()
+    }
+
+    class TourListViewModel {
+        - tourService: TourService
+        - tours: ObservableList<TourDTO>
+        - selectedTour: ObjectProperty<TourDTO>
+        + loadData()
+        + addTour(tour: TourDTO)
+        + updateTour(index: int, tour: TourDTO)
+        + deleteTour(index: int)
+        + searchTours(searchText: String)
+    }
+
+    class TourLogViewModel {
+        - tourLogService: TourLogService
+        - tourLogs: List<TourLogDTO>
+        - selectedTour: TourDTO
+        + setSelectedTour(tour: TourDTO)
+        + loadLogsForTour(tourId: Long)
+        + addTourLog(log: TourLogDTO)
+        + searchTourLogs(searchText: String)
+    }
+
+    class TourStatisticsViewModel {
+        - tourService: TourService
+        - tourLogService: TourLogService
+        - totalTours: int
+        - totalLogs: int
+        - averageDistance: double
+        - averageRating: double
+        + loadData()
+        + getStatistics(): Map<String, Object>
+    }
+}
+
+package "Business Layer" {
+    interface TourService {
+        + getAllTours(): List<TourDTO>
+        + getTourById(id: Long): TourDTO
+        + createTour(tour: TourDTO): TourDTO
+        + updateTour(tour: TourDTO): TourDTO
+        + deleteTour(id: Long): void
+        + searchTours(searchText: String): List<TourDTO>
+    }
+
+    class TourServiceImpl {
+        - tourRepository: TourRepository
+        - routeService: RouteService
+        + getAllTours(): List<TourDTO>
+        + createTour(tour: TourDTO): TourDTO
+        + updateTour(tour: TourDTO): TourDTO
+        + deleteTour(id: Long): void
+        + searchTours(searchText: String): List<TourDTO>
+        - convertToDTO(tour: Tour): TourDTO
+        - convertToEntity(dto: TourDTO): Tour
+    }
+
+    interface TourLogService {
+        + getAllTourLogs(): List<TourLogDTO>
+        + getTourLogsByTourId(tourId: Long): List<TourLogDTO>
+        + createTourLog(log: TourLogDTO): TourLogDTO
+        + updateTourLog(log: TourLogDTO): TourLogDTO
+        + deleteTourLog(id: Long): void
+        + searchTourLogs(searchText: String): List<TourLogDTO>
+        + getTourLogCountByTourId(tourId: Long): Long
+    }
+
+    class TourLogServiceImpl {
+        - tourLogRepository: TourLogRepository
+        - tourRepository: TourRepository
+        + getAllTourLogs(): List<TourLogDTO>
+        + createTourLog(log: TourLogDTO): TourLogDTO
+        + updateTourLog(log: TourLogDTO): TourLogDTO
+        + deleteTourLog(id: Long): void
+        + searchTourLogs(searchText: String): List<TourLogDTO>
+        - toDTO(log: TourLog): TourLogDTO
+        - toEntity(dto: TourLogDTO): TourLog
+    }
+
+    interface RouteService {
+        + getRouteData(from: String, to: String, transport: String): RouteData
+        + geocode(address: String): double[]
+    }
+
+    class RouteServiceImpl {
+        - openRouteService: OpenRouteServicesAPI
+        + getRouteData(from: String, to: String, transport: String): RouteData
+        + geocode(address: String): double[]
+    }
+
+    interface ImportExportService {
+        + exportToursToJson(tours: List<TourDTO>, filePath: String): boolean
+        + importToursFromJson(filePath: String): List<TourDTO>
+        + exportToursToCsv(tours: List<TourDTO>, filePath: String): boolean
+        + importToursFromCsv(filePath: String): List<TourDTO>
+        + exportTourLogsToJson(logs: List<TourLogDTO>, filePath: String): boolean
+        + importTourLogsFromJson(filePath: String): List<TourLogDTO>
+    }
+
+    class ImportExportServiceImpl {
+        - objectMapper: ObjectMapper
+        - dateFormatter: DateTimeFormatter
+        + exportToursToJson(tours: List<TourDTO>, filePath: String): boolean
+        + importToursFromJson(filePath: String): List<TourDTO>
+        + exportToursToCsv(tours: List<TourDTO>, filePath: String): boolean
+        + importToursFromCsv(filePath: String): List<TourDTO>
+        - escapeCsv(value: String): String
+        - parseCsvLine(line: String): String[]
+    }
+
+    class PdfGenerator {
+        + generateTourReport(file: File, tour: TourDTO, logs: List<TourLogDTO>, imageBytes: byte[]): void
+        - addTourDetails(document: Document, tour: TourDTO): void
+        - addTourLogs(document: Document, logs: List<TourLogDTO>): void
+        - addMapImage(document: Document, imageBytes: byte[]): void
+    }
+
+    class TourDTO {
+        - id: Long
+        - name: String
+        - description: String
+        - distance: double
+        - estimatedTime: String
+        - transportType: String
+        - fromLocation: String
+        - toLocation: String
+        + getters()
+        + setters()
+    }
+
+    class TourLogDTO {
+        - id: Long
+        - tourId: Long
+        - dateTime: LocalDateTime
+        - comment: String
+        - difficulty: Double
+        - totalDistance: Double
+        - totalTime: Double
+        - rating: Double
+        + getters()
+        + setters()
+        + getFormattedDateTime(): String
+        + getDifficultyDescription(): String
+        + getRatingDescription(): String
+    }
+
+    class RouteData {
+        - distance: double
+        - duration: double
+        - coordinates: List<double[]>
+        + getters()
+        + setters()
+    }
+}
+
+package "Data Layer" {
+    interface TourRepository {
+        + findAll(): List<Tour>
+        + findById(id: Long): Optional<Tour>
+        + save(tour: Tour): Tour
+        + deleteById(id: Long): void
+        + findByNameContainingIgnoreCase(searchText: String): List<Tour>
+    }
+
+    interface TourLogRepository {
+        + findAll(): List<TourLog>
+        + findById(id: Long): Optional<TourLog>
+        + save(log: TourLog): TourLog
+        + deleteById(id: Long): void
+        + findByTourId(tourId: Long): List<TourLog>
+        + findByCommentContainingIgnoreCase(comment: String): List<TourLog>
+        + countByTourId(tourId: Long): Long
+        + getAverageRatingByTourId(tourId: Long): Double
+        + getAverageDifficultyByTourId(tourId: Long): Double
+    }
+
+    @Entity
+    class Tour {
+        - id: Long
+        - name: String
+        - description: String
+        - distance: Double
+        - estimatedTime: String
+        - transportType: String
+        - fromLocation: String
+        - toLocation: String
+        - routeImagePath: String
+        - createdAt: LocalDateTime
+        - updatedAt: LocalDateTime
+        - tourLogs: List<TourLog>
+        + getters()
+        + setters()
+    }
+
+    @Entity
+    class TourLog {
+        - id: Long
+        - tour: Tour
+        - dateTime: LocalDateTime
+        - comment: String
+        - difficulty: Double
+        - totalDistance: Double
+        - totalTime: Double
+        - rating: Double
+        + getters()
+        + setters()
+    }
+}
+
+' Relationships
+MainView --> ViewFactory
+MainView --> TourListView
+MainView --> TourLogView
+MainView --> TourDetailsView
+
+TourListView --> TourListViewModel
+TourLogView --> TourLogViewModel
+TourDetailsView --> RouteService
+
+ViewFactory --> TourService
+ViewFactory --> TourLogService
+ViewFactory --> RouteService
+
+TourListViewModel --|> BaseViewModel
+TourLogViewModel --|> BaseViewModel
+TourStatisticsViewModel --|> BaseViewModel
+
+TourListViewModel --> TourService
+TourLogViewModel --> TourLogService
+TourStatisticsViewModel --> TourService
+TourStatisticsViewModel --> TourLogService
+
+TourServiceImpl ..|> TourService
+TourLogServiceImpl ..|> TourLogService
+RouteServiceImpl ..|> RouteService
+ImportExportServiceImpl ..|> ImportExportService
+
+TourServiceImpl --> TourRepository
+TourServiceImpl --> RouteService
+TourLogServiceImpl --> TourLogRepository
+TourLogServiceImpl --> TourRepository
+
+TourRepository --> Tour
+TourLogRepository --> TourLog
+
+Tour --> TourLog : 1..*
+TourLog --> Tour : 1
+
+@enduml

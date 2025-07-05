@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<GridPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.tourplanner.ui.view.TourLogEditorDialog" hgap="10" vgap="10">
+    <padding>
+        <Insets top="10" right="10" bottom="10" left="10"/>
+    </padding>
+    <Label text="Tour:" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+    <ComboBox fx:id="tourComboBox" promptText="Select a tour..." GridPane.rowIndex="0" GridPane.columnIndex="1" />
+    <Label text="Date/Time:" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+    <DatePicker fx:id="datePicker" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+    <Label text="Time:" GridPane.rowIndex="2" GridPane.columnIndex="0" />
+    <TextField fx:id="timeField" promptText="HH:mm" GridPane.rowIndex="2" GridPane.columnIndex="1" />
+    <Label text="Comment:" GridPane.rowIndex="3" GridPane.columnIndex="0" />
+    <TextArea fx:id="commentField" prefRowCount="2" GridPane.rowIndex="3" GridPane.columnIndex="1" />
+    <Label text="Difficulty (1-5):" GridPane.rowIndex="4" GridPane.columnIndex="0" />
+    <Spinner fx:id="difficultySpinner" min="1" max="5" initialValue="3" GridPane.rowIndex="4" GridPane.columnIndex="1" />
+    <Label text="Total Distance (km):" GridPane.rowIndex="5" GridPane.columnIndex="0" />
+    <TextField fx:id="distanceField" GridPane.rowIndex="5" GridPane.columnIndex="1" />
+    <Label text="Total Time (h):" GridPane.rowIndex="6" GridPane.columnIndex="0" />
+    <TextField fx:id="totalTimeField" promptText="e.g. 2.5" GridPane.rowIndex="6" GridPane.columnIndex="1" />
+    <Label text="Rating (1-5):" GridPane.rowIndex="7" GridPane.columnIndex="0" />
+    <Spinner fx:id="ratingSpinner" min="1" max="5" initialValue="3" GridPane.rowIndex="7" GridPane.columnIndex="1" />
+    <Label fx:id="errorLabel" style="-fx-text-fill: red;" GridPane.rowIndex="8" GridPane.columnIndex="0" GridPane.columnSpan="2" />
+    <HBox spacing="10" alignment="center" GridPane.rowIndex="9" GridPane.columnIndex="0" GridPane.columnSpan="2">
+        <Button fx:id="saveBtn" text="Save" onAction="#onSave" />
+        <Button fx:id="cancelBtn" text="Cancel" onAction="#onCancel" />
+    </HBox>
+</GridPane> 

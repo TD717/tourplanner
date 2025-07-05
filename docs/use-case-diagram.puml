@@ -1,0 +1,107 @@
+@startuml TourPlanner Use Case Diagram
+
+left to right direction
+skinparam packageStyle rectangle
+
+actor User as U
+
+rectangle "TourPlanner Application" {
+    usecase "Manage Tours" as UC1
+    usecase "Add Tour" as UC1_1
+    usecase "Edit Tour" as UC1_2
+    usecase "Delete Tour" as UC1_3
+    usecase "Search Tours" as UC1_4
+    usecase "View Tour Details" as UC1_5
+    
+    usecase "Manage Tour Logs" as UC2
+    usecase "Add Tour Log" as UC2_1
+    usecase "Edit Tour Log" as UC2_2
+    usecase "Delete Tour Log" as UC2_3
+    usecase "Search Tour Logs" as UC2_4
+    usecase "View Tour Logs" as UC2_5
+    
+    usecase "View Advanced Statistics" as UC3
+    usecase "Generate PDF Report" as UC4
+    usecase "Export Data" as UC5
+    usecase "Import Data" as UC6
+    usecase "Calculate Route" as UC7
+    usecase "View Interactive Map" as UC8
+}
+
+' Main use case relationships
+U --> UC1
+U --> UC2
+U --> UC3
+U --> UC4
+U --> UC5
+U --> UC6
+
+' Tour management sub-use cases
+UC1 ..> UC1_1 : <<include>>
+UC1 ..> UC1_2 : <<include>>
+UC1 ..> UC1_3 : <<include>>
+UC1 ..> UC1_4 : <<include>>
+UC1 ..> UC1_5 : <<include>>
+
+' Tour log management sub-use cases
+UC2 ..> UC2_1 : <<include>>
+UC2 ..> UC2_2 : <<include>>
+UC2 ..> UC2_3 : <<include>>
+UC2 ..> UC2_4 : <<include>>
+UC2 ..> UC2_5 : <<include>>
+
+' Include relationships for features
+UC1_1 ..> UC7 : <<include>>
+UC1_2 ..> UC7 : <<include>>
+UC1_5 ..> UC8 : <<include>>
+UC4 ..> UC8 : <<include>>
+
+' Extend relationships
+UC1_4 <.. UC1_5 : <<extend>>
+UC2_4 <.. UC2_5 : <<extend>>
+
+note right of UC1
+  Tour management includes:
+  - Creating new tours with route calculation
+  - Editing existing tour information
+  - Deleting tours and associated logs
+  - Searching tours by name
+  - Viewing detailed tour information
+end note
+
+note right of UC2
+  Tour log management includes:
+  - Recording tour completion logs
+  - Editing log details (difficulty, rating, etc.)
+  - Deleting log entries
+  - Searching logs by comment text
+  - Viewing logs for specific tours
+end note
+
+note right of UC3
+  **UNIQUE FEATURE**: Advanced Statistics provide:
+  - Total number of tours and logs
+  - Average distances and ratings across all tours
+  - Most popular tour identification
+  - Performance analytics and trends
+  - Real-time statistical dashboard
+  - Data-driven tour planning insights
+end note
+
+note right of UC4
+  PDF reports include:
+  - Tour details and route information
+  - Associated tour logs
+  - Interactive map image
+  - Professional formatting
+end note
+
+note right of UC7
+  Route calculation:
+  - Automatic distance calculation
+  - Estimated travel time
+  - Multiple transport types
+  - Real-time API integration
+end note
+
+@enduml 

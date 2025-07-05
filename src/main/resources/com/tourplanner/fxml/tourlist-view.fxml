@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.tourplanner.ui.view.TourListView"
+      spacing="12" prefWidth="230" style="-fx-background-color: #f9f9f9; -fx-padding: 10;">
+
+    <!-- Title -->
+    <Label text="Tour List" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-padding: 10 0 0 0;" alignment="CENTER"/>
+
+    <!-- Search field -->
+    <TextField fx:id="searchField" promptText="Search tours..." prefWidth="200" style="-fx-background-radius: 6; -fx-padding: 4;"/>
+
+    <!-- Loading indicator -->
+    <ProgressIndicator fx:id="loadingIndicator" visible="false" prefWidth="20" prefHeight="20"/>
+
+    <!-- Buttons group -->
+    <VBox spacing="6" alignment="CENTER" style="-fx-padding: 8 0 8 0;">
+        <HBox spacing="6" alignment="CENTER">
+            <Button text="Add"    fx:id="addBtn"    onAction="#onAdd"/>
+            <Button text="Edit"   fx:id="editBtn"   onAction="#onEdit"  disable="true"/>
+            <Button text="Delete" fx:id="deleteBtn" onAction="#onDelete" disable="true"/>
+        </HBox>
+        <Button text="Generate PDF" fx:id="pdfBtn" onAction="#onGeneratePdf" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6;"/>
+        <Button text="Import" fx:id="importBtn" onAction="#onImport" style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6;"/>
+        <Button text="Export" fx:id="exportBtn" onAction="#onExport" style="-fx-background-color: #FF9800; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6;"/>
+        <Button text="Refresh" onAction="#onRefresh" style="-fx-font-size: 10px; -fx-background-radius: 6;"/>
+    </VBox>
+
+    <!-- List view with max height -->
+    <ListView fx:id="tourList" VBox.vgrow="NEVER" maxHeight="300" style="-fx-background-radius: 6;"/>
+
+</VBox>
