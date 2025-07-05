@@ -27,29 +27,53 @@ public class TourStatisticsView {
         BorderPane root = new BorderPane();
         root.setPadding(new Insets(10));
 
-        Label totalToursLabel = new Label("Total Tours: " + viewModel.getTotalTours());
-        Label totalLogsLabel = new Label("Total Tour Logs: " + viewModel.getTotalLogs());
-        Label avgDistLabel = new Label(String.format("Average Tour Distance: %.2f km", viewModel.getAverageDistance()));
-        Label avgRatingLabel = new Label(String.format("Average Tour Rating: %.2f", viewModel.getAverageRating()));
-        Label mostPopularLabel = new Label(viewModel.getMostPopularTour() != null ?
-                "Most Popular Tour: " + viewModel.getMostPopularTour().getName() +
-                        " (" + viewModel.getMostPopularTourLogCount() + " logs)" :
-                "Most Popular Tour: N/A");
-        Label errorLabel = new Label(viewModel.getErrorMessage());
+        Label totalToursLabel = new Label();
+        Label totalLogsLabel = new Label();
+        Label avgDistLabel = new Label();
+        Label avgRatingLabel = new Label();
+        Label mostPopularLabel = new Label();
+        Label errorLabel = new Label();
         errorLabel.setStyle("-fx-text-fill: red;");
 
-        // Optional: Bar chart for tour popularity
+        // Function to update all labels
+        Runnable updateLabels = () -> {
+            totalToursLabel.setText("Total Tours: " + viewModel.getTotalTours());
+            totalLogsLabel.setText("Total Tour Logs: " + viewModel.getTotalLogs());
+            avgDistLabel.setText(String.format("Average Tour Distance: %.2f km", viewModel.getAverageDistance()));
+            avgRatingLabel.setText(String.format("Average Tour Rating: %.2f", viewModel.getAverageRating()));
+            mostPopularLabel.setText(viewModel.getMostPopularTour() != null ?
+                    "Most Popular Tour: " + viewModel.getMostPopularTour().getName() +
+                            " (" + viewModel.getMostPopularTourLogCount() + " logs)" :
+                    "Most Popular Tour: N/A");
+            errorLabel.setText(viewModel.getErrorMessage());
+        };
+
+        // Initial update
+        updateLabels.run();
+
+        // Bar chart for tour popularity - showing all tours
         CategoryAxis xAxis = new CategoryAxis();
         NumberAxis yAxis = new NumberAxis();
         BarChart<String, Number> barChart = new BarChart<>(xAxis, yAxis);
-        barChart.setTitle("Tour Popularity");
+        barChart.setTitle("Tour Popularity (Logs per Tour)");
         xAxis.setLabel("Tour");
         yAxis.setLabel("Log Count");
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         series.setName("Logs per Tour");
-        if (viewModel.getMostPopularTour() != null) {
-            series.getData().add(new XYChart.Data<>(viewModel.getMostPopularTour().getName(), viewModel.getMostPopularTourLogCount()));
-        }
+        
+        // Function to update the bar chart with all tours
+        Runnable updateChart = () -> {
+            series.getData().clear();
+            var tourStats = viewModel.getTourStats();
+            for (var entry : tourStats.entrySet()) {
+                String tourName = entry.getKey().getName();
+                int logCount = viewModel.getTourLogCount(entry.getKey().getId());
+                series.getData().add(new XYChart.Data<>(tourName, logCount));
+            }
+        };
+        
+        // Initial chart update
+        updateChart.run();
         barChart.getData().add(series);
 
         Button summaryReportBtn = new Button("Generate Summary Report");
@@ -72,26 +96,17 @@ public class TourStatisticsView {
         refreshBtn.setOnAction(e -> {
             viewModel.loadData();
             // Update all labels and chart after reload
-            totalToursLabel.setText("Total Tours: " + viewModel.getTotalTours());
-            totalLogsLabel.setText("Total Tour Logs: " + viewModel.getTotalLogs());
-            avgDistLabel.setText(String.format("Average Tour Distance: %.2f km", viewModel.getAverageDistance()));
-            avgRatingLabel.setText(String.format("Average Tour Rating: %.2f", viewModel.getAverageRating()));
-            mostPopularLabel.setText(viewModel.getMostPopularTour() != null ?
-                "Most Popular Tour: " + viewModel.getMostPopularTour().getName() +
-                " (" + viewModel.getMostPopularTourLogCount() + " logs)" :
-                "Most Popular Tour: N/A");
-            errorLabel.setText(viewModel.getErrorMessage());
-            // Update bar chart
-            series.getData().clear();
-            if (viewModel.getMostPopularTour() != null) {
-                series.getData().add(new XYChart.Data<>(viewModel.getMostPopularTour().getName(), viewModel.getMostPopularTourLogCount()));
-            }
+            updateLabels.run();
+            updateChart.run();
         });
 
+        // Set preferred size for the chart
+        barChart.setPrefSize(600, 300);
+        
         VBox vbox = new VBox(10, totalToursLabel, totalLogsLabel, avgDistLabel, avgRatingLabel, mostPopularLabel, barChart, summaryReportBtn, refreshBtn, errorLabel);
         root.setCenter(vbox);
 
-        Scene scene = new Scene(root, 500, 400);
+        Scene scene = new Scene(root, 700, 600);
         stage.setTitle("Tour Statistics Dashboard");
         stage.setScene(scene);
         stage.show();

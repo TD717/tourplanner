@@ -23,9 +23,7 @@ import com.tourplanner.backend.service.MapService;
 import com.tourplanner.backend.service.OpenRouteServicesAPI;
 import com.tourplanner.backend.service.ImportExportService;
 
-/**
- * ViewFactory responsible for creating and managing JavaFX views following MVVM pattern.
- */
+// ViewFactory responsible for creating and managing JavaFX views using the MVVM pattern.
 public class ViewFactory {
 
     private final Map<String, Object> viewModelCache = new HashMap<>();
@@ -49,12 +47,7 @@ public class ViewFactory {
         this.mapService = applicationContext.getBean(OpenRouteServicesAPI.class);
     }
 
-    /**
-     * Creates a view without a ViewModel (for simple views like TourDetailsView).
-     * 
-     * @param fxmlPath Path to the FXML file
-     * @return ViewPair containing the root node and controller
-     */
+    // Creates a view without a ViewModel
     public ViewPair createViewWithoutViewModel(String fxmlPath) {
         try {
             // Create FXMLLoader and set controller factory
@@ -84,7 +77,7 @@ public class ViewFactory {
                     throw new RuntimeException("Failed to create controller", e);
                 }
             });
-            // Load the FXML first (this will call initialize() and inject @FXML fields)
+            // Load the FXML first
             Parent root = loader.load();
             return new ViewPair(root, loader.getController());
         } catch (IOException ex) {
@@ -92,14 +85,7 @@ public class ViewFactory {
         }
     }
 
-    /**
-     * Creates a view with its associated ViewModel following MVVM pattern.
-     * 
-     * @param fxmlPath Path to the FXML file
-     * @param viewModelClass Class of the ViewModel to create
-     * @param <T> Type of the ViewModel
-     * @return ViewPair containing the root node and controller
-     */
+    // Creates a view with its associated ViewModel following MVVM pattern.
     public <T> ViewPair createView(String fxmlPath, Class<T> viewModelClass) {
         try {
             // Get or create ViewModel
@@ -137,14 +123,13 @@ public class ViewFactory {
             });
             // Load the FXML first (this will call initialize() and inject @FXML fields)
             Parent root = loader.load();
-            // Now inject the ViewModel after FXML fields are available
+            // Inject the ViewModel after FXML fields are available
             Object controller = loader.getController();
             try {
                 var setViewModelMethod = controller.getClass()
                         .getMethod("setViewModel", viewModelClass);
                 setViewModelMethod.invoke(controller, viewModel);
             } catch (NoSuchMethodException e) {
-                // Controller doesn't have setViewModel method, that's okay
             }
             return new ViewPair(root, controller);
         } catch (IOException ex) {
@@ -154,51 +139,9 @@ public class ViewFactory {
         }
     }
 
-    /**
-     * Creates a modal dialog with the specified view.
-     * 
-     * @param fxmlPath Path to the FXML file
-     * @param viewModelClass Class of the ViewModel
-     * @param title Dialog title
-     * @param owner Owner stage
-     * @param <T> Type of the ViewModel
-     * @return Stage containing the dialog
-     */
-    public <T> Stage createModalDialog(String fxmlPath, Class<T> viewModelClass, 
-                                     String title, Stage owner) {
-        ViewPair viewPair = createView(fxmlPath, viewModelClass);
-        
-        Stage dialog = new Stage();
-        dialog.setTitle(title);
-        dialog.initModality(Modality.WINDOW_MODAL);
-        dialog.initOwner(owner);
-        dialog.setScene(new Scene(viewPair.root()));
-        
-        // Cache the stage for potential reuse
-        stageCache.put(fxmlPath, dialog);
-        
-        return dialog;
-    }
 
-    /**
-     * Creates a main window view.
-     * 
-     * @param fxmlPath Path to the FXML file
-     * @param viewModelClass Class of the ViewModel
-     * @param <T> Type of the ViewModel
-     * @return ViewPair containing the root node and controller
-     */
-    public <T> ViewPair createMainWindow(String fxmlPath, Class<T> viewModelClass) {
-        return createView(fxmlPath, viewModelClass);
-    }
+    // Gets or creates a ViewModel from cache or creates manually.
 
-    /**
-     * Gets or creates a ViewModel from cache or creates manually.
-     * 
-     * @param viewModelClass Class of the ViewModel
-     * @param <T> Type of the ViewModel
-     * @return ViewModel instance
-     */
     @SuppressWarnings("unchecked")
     private <T> T getOrCreateViewModel(Class<T> viewModelClass) {
         String key = viewModelClass.getName();
@@ -215,7 +158,6 @@ public class ViewFactory {
             } else if (viewModelClass == TourListViewModel.class) {
                 viewModel = (T) new TourListViewModel(tourService);
             } else {
-                // Fallback to no-arg constructor for other ViewModels
                 viewModel = viewModelClass.getDeclaredConstructor().newInstance();
             }
             viewModelCache.put(key, viewModel);
@@ -225,30 +167,18 @@ public class ViewFactory {
         }
     }
 
-    /**
-     * Clears the ViewModel cache.
-     */
-    public void clearCache() {
-        viewModelCache.clear();
-        stageCache.clear();
-    }
-
-    /**
-     * Removes a specific ViewModel from cache.
-     * 
-     * @param viewModelClass Class of the ViewModel to remove
-     */
-    public void removeFromCache(Class<?> viewModelClass) {
-        viewModelCache.remove(viewModelClass.getName());
-    }
-
+    // Returns the TourLog ViewModel
     public TourLogViewModel getTourLogViewModel() {
         if (tourLogViewModel == null) {
             tourLogViewModel = new TourLogViewModel(tourLogService);
+            // Connect to statistics view model for automatic updates
+            TourStatisticsViewModel statsViewModel = getTourStatisticsViewModel();
+            tourLogViewModel.setStatisticsViewModel(statsViewModel);
         }
         return tourLogViewModel;
     }
 
+    // Returns the TourStatistics ViewModel
     public TourStatisticsViewModel getTourStatisticsViewModel() {
         if (tourStatisticsViewModel == null) {
             tourStatisticsViewModel = new TourStatisticsViewModel(tourService, tourLogService);
@@ -256,13 +186,7 @@ public class ViewFactory {
         return tourStatisticsViewModel;
     }
 
-    public TourStatisticsView getTourStatisticsView() {
-        if (tourStatisticsView == null) {
-            tourStatisticsView = new TourStatisticsView(getTourStatisticsViewModel());
-        }
-        return tourStatisticsView;
-    }
-
+    // Returns the Main View
     public MainView getMainView() {
         try {
             // Load the FXML layout

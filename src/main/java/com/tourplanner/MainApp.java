@@ -17,7 +17,7 @@ public class MainApp extends Application {
 
     @Override
     public void init() {
-        // Use SpringApplicationBuilder to load application.properties
+        // Using SpringApplicationBuilder to load application.properties
         springContext = new SpringApplicationBuilder(SpringConfig.class).run();
         TourLogService tourLogService = springContext.getBean(TourLogService.class);
         TourService tourService = springContext.getBean(TourService.class);

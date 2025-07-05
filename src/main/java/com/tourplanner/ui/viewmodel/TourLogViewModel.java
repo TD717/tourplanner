@@ -17,9 +17,15 @@ public class TourLogViewModel extends BaseViewModel {
     private TourLogDTO selectedTourLog;
     private String errorMessage = "";
     private boolean loading = false;
+    private TourStatisticsViewModel statisticsViewModel; // Reference to statistics view model
 
     public TourLogViewModel(TourLogService tourLogService) {
         this.tourLogService = tourLogService;
+    }
+
+    // Set the statistics view model for notifications
+    public void setStatisticsViewModel(TourStatisticsViewModel statisticsViewModel) {
+        this.statisticsViewModel = statisticsViewModel;
     }
 
     public void setSelectedTour(TourDTO tour) {
@@ -54,15 +60,29 @@ public class TourLogViewModel extends BaseViewModel {
     }
 
     public void addTourLog(TourLogDTO log) {
-        if (selectedTour == null) {
-            return;
-        }
         try {
+            // If no tour ID is provided, use the currently selected tour
             if (log.getTourId() == null) {
+                if (selectedTour == null) {
+                    errorMessage = "No tour selected and no tour ID provided";
+                    return;
+                }
                 log.setTourId(selectedTour.getId());
             }
+            
             TourLogDTO saved = tourLogService.createTourLog(log);
-            tourLogs.add(saved);
+            
+            // Only add to the current list if it's for the currently selected tour
+            // or if no tour is currently selected (show all logs)
+            if (selectedTour == null || selectedTour.getId().equals(saved.getTourId())) {
+                tourLogs.add(saved);
+            }
+            
+            // Refresh statistics after adding a log
+            if (statisticsViewModel != null) {
+                statisticsViewModel.refreshStatistics();
+            }
+            
             errorMessage = "";
         } catch (Exception e) {
             errorMessage = "Failed to add tour log: " + e.getMessage();
@@ -71,11 +91,25 @@ public class TourLogViewModel extends BaseViewModel {
 
     public void updateTourLog(int index, TourLogDTO log) {
         try {
+            // Ensure the log has a valid ID for updating
+            if (log.getId() == null) {
+                errorMessage = "Cannot update log without ID";
+                return;
+            }
+            
+            // If no tour ID is provided, use the currently selected tour
             if (log.getTourId() == null && selectedTour != null) {
                 log.setTourId(selectedTour.getId());
             }
+            
             TourLogDTO updated = tourLogService.updateTourLog(log);
             tourLogs.set(index, updated);
+            
+            // Refresh statistics after updating a log
+            if (statisticsViewModel != null) {
+                statisticsViewModel.refreshStatistics();
+            }
+            
             errorMessage = "";
         } catch (Exception e) {
             errorMessage = "Failed to update tour log: " + e.getMessage();
@@ -87,6 +121,12 @@ public class TourLogViewModel extends BaseViewModel {
             TourLogDTO log = tourLogs.get(index);
             tourLogService.deleteTourLog(log.getId());
             tourLogs.remove(index);
+            
+            // Refresh statistics after deleting a log
+            if (statisticsViewModel != null) {
+                statisticsViewModel.refreshStatistics();
+            }
+            
             errorMessage = "";
         } catch (Exception e) {
             errorMessage = "Failed to delete tour log: " + e.getMessage();

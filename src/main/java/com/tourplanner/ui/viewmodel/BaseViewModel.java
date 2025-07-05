@@ -7,10 +7,7 @@ import javafx.beans.property.SimpleStringProperty;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
-/**
- * Base ViewModel class that provides common functionality for all ViewModels.
- * Implements the MVVM pattern with common properties and methods.
- */
+// Base ViewModel class that provides common functionality for all ViewModels.
 public abstract class BaseViewModel {
     
     protected final Logger logger = Logger.getLogger(getClass().getName());
@@ -20,44 +17,32 @@ public abstract class BaseViewModel {
     private final BooleanProperty isLoading = new SimpleBooleanProperty(false);
     private final StringProperty errorMessage = new SimpleStringProperty("");
     
-    /**
-     * Initialize the ViewModel. Called after construction.
-     */
+
     public abstract void initialize();
     
-    /**
-     * Clean up resources when the ViewModel is no longer needed.
-     */
+    //Clean up resources when the ViewModel is no longer needed.
     public abstract void dispose();
     
-    /**
-     * Load data for the ViewModel.
-     */
+    // Load data for the ViewModel.
     public abstract void loadData();
     
-    /**
-     * Refresh the ViewModel data.
-     */
+    // Refresh the ViewModel data.
     public void refresh() {
         logger.fine("Refreshing ViewModel: " + getClass().getSimpleName());
         loadData();
     }
     
-    /**
-     * Clear any error messages.
-     */
+    // Clear any error messages.
     public void clearError() {
         errorMessage.set("");
     }
     
-    /**
-     * Set an error message.
-     */
+    // Set an error message.
     public void setError(String error) {
         errorMessage.set(error);
     }
     
-    // Property getters and setters
+    // Getters and setters
     public String getTitle() {
         return title.get();
     }

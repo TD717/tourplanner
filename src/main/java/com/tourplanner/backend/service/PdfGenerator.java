@@ -82,18 +82,6 @@ public class PdfGenerator {
             logTable.addCell(new Cell().add(new Paragraph(log.getRating() != null ? String.valueOf(log.getRating()) : "")));
         }
         document.add(logTable);
-
-        document.add(new Paragraph("Route Map")
-                .setFontSize(18)
-                .setUnderline()
-                .setMarginBottom(10)
-        );
-        if (imageBytes != null) {
-            Image image = new Image(ImageDataFactory.create(imageBytes));
-            image.setHorizontalAlignment(HorizontalAlignment.CENTER);
-            image.setMaxWidth(UnitValue.createPercentValue(60));
-            document.add(image);
-        }
         document.close();
     }
 

@@ -17,10 +17,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-/**
- * View controller for the Tour List following MVVM pattern.
- * Handles UI interactions and delegates business logic to the ViewModel.
- */
+// View controller for the Tour List following MVVM pattern
 public class TourListView {
 
     @FXML private ListView<TourDTO> tourList;
@@ -34,9 +31,7 @@ public class TourListView {
     private RouteService routeService;
     private ImportExportService importExportService;
 
-    /**
-     * Set the ViewModel for this view. Called by ViewFactory.
-     */
+    // Set the ViewModel for this view, called by ViewFactory
     public void setViewModel(TourListViewModel viewModel) {
         this.viewModel = viewModel;
         if (tourList != null) {
@@ -78,16 +73,12 @@ public class TourListView {
         viewModel.initialize();
     }
 
-    /**
-     * Get the selected tour property for binding.
-     */
+    // Get the selected tour property for binding.
     public ObjectProperty<TourDTO> selectedTourProperty() {
         return viewModel.selectedTourProperty();
     }
 
-    /**
-     * Set the selected tour.
-     */
+    // Set the selected tour
     public void setSelectedTour(TourDTO tour) {
         viewModel.setSelectedTour(tour);
     }
@@ -249,9 +240,7 @@ public class TourListView {
         alert.showAndWait();
     }
 
-    /**
-     * Public getter for the tourList ListView.
-     */
+    // Public getter for the tourList ListView.
     public ListView<TourDTO> getTourList() {
         return tourList;
     }

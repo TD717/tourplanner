@@ -15,22 +15,16 @@ import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
-/**
- * Dialog for editing tour information following MVVM pattern.
- * Provides a modal dialog for adding and editing tours.
- */
+// Dialog for editing tour information following MVVM pattern.
 public class TourEditorDialog extends Dialog<TourDTO> {
 
     private static final Logger logger = Logger.getLogger(TourEditorDialog.class.getName());
 
-    /* ---------- FXML fields ---------- */
     @FXML private TextField nameField;
     @FXML private TextField fromField;
     @FXML private TextField toField;
     @FXML private TextArea descriptionField;
     @FXML private ComboBox<String> transportTypeBox;
-
-
 
     private MapService mapService;
     private ContextMenu fromSuggestions = new ContextMenu();
@@ -90,7 +84,7 @@ public class TourEditorDialog extends Dialog<TourDTO> {
         });
     }
 
-    /* ---------- factory helpers ---------- */
+    // Factory helpers
     public static Optional<TourDTO> showAddDialog(MapService mapService) {
         TourEditorDialog dialog = new TourEditorDialog(null);
         dialog.setMapService(mapService);
@@ -103,7 +97,7 @@ public class TourEditorDialog extends Dialog<TourDTO> {
         return dialog.showAndWait();
     }
 
-    /* ---------- constructor ---------- */
+    // Constructor
     private TourEditorDialog(TourDTO toEdit) {
         setTitle(toEdit == null ? "Add Tour" : "Edit Tour");
 
@@ -141,7 +135,7 @@ public class TourEditorDialog extends Dialog<TourDTO> {
             logger.fine("Pre-filled dialog for editing tour: " + toEdit.getName());
         }
 
-        /* Convert dialog result with validation */
+        // Convert dialog result with validation
         setResultConverter(btn -> {
             if (btn != ButtonType.OK) {
                 logger.fine("Dialog cancelled");
@@ -152,12 +146,7 @@ public class TourEditorDialog extends Dialog<TourDTO> {
         });
     }
 
-    /**
-     * Create a TourDTO from the input fields with validation.
-     * 
-     * @param originalTour The original tour being edited (null for new tours)
-     * @return TourDTO if validation passes, null otherwise
-     */
+    // Create a TourDTO from the input fields with validation.
     private TourDTO createTourFromInput(TourDTO originalTour) {
         try {
             // Basic validation
@@ -219,11 +208,7 @@ public class TourEditorDialog extends Dialog<TourDTO> {
         }
     }
 
-    /**
-     * Show a validation error dialog.
-     * 
-     * @param message Error message to display
-     */
+    // Show a validation error dialog.
     private void showValidationError(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Validation Error");
@@ -232,6 +217,4 @@ public class TourEditorDialog extends Dialog<TourDTO> {
         alert.showAndWait();
         logger.warning("Validation error: " + message);
     }
-
-
 }

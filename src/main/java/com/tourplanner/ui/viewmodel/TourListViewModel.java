@@ -8,10 +8,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import java.util.logging.Level;
 
-/**
- * ViewModel for the Tour List view following MVVM pattern.
- * Manages the list of tours and provides data binding for the UI.
- */
+// ViewModel for the Tour List view following MVVM pattern. Manages the list of tours and provides data binding for the UI.
 public class TourListViewModel extends BaseViewModel {
 
     private final TourService tourService;
@@ -56,9 +53,7 @@ public class TourListViewModel extends BaseViewModel {
         }
     }
 
-    /**
-     * Add a new tour to the list.
-     */
+    // Add a new tour to the list.
     public void addTour(TourDTO tour) {
         if (tour != null) {
             try {
@@ -72,9 +67,7 @@ public class TourListViewModel extends BaseViewModel {
         }
     }
 
-    /**
-     * Update an existing tour in the list.
-     */
+    // Update an existing tour in the list.
     public void updateTour(int index, TourDTO updatedTour) {
         if (index >= 0 && index < tours.size() && updatedTour != null) {
             try {
@@ -88,9 +81,7 @@ public class TourListViewModel extends BaseViewModel {
         }
     }
 
-    /**
-     * Delete a tour from the list.
-     */
+    // Delete a tour from the list.
     public void deleteTour(int index) {
         if (index >= 0 && index < tours.size()) {
             try {
@@ -105,9 +96,7 @@ public class TourListViewModel extends BaseViewModel {
         }
     }
 
-    /**
-     * Search tours by text.
-     */
+    // Search tours by text.
     public void searchTours(String searchText) {
         setLoading(true);
         clearError();
@@ -125,7 +114,7 @@ public class TourListViewModel extends BaseViewModel {
         }
     }
 
-    // Property getters
+    // Getters
     public ObservableList<TourDTO> getTours() {
         return tours;
     }

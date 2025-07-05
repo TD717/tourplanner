@@ -64,6 +64,11 @@ public class TourStatisticsViewModel extends BaseViewModel {
     public TourDTO getMostPopularTour() { return mostPopularTour; }
     public int getMostPopularTourLogCount() { return mostPopularTourLogCount; }
     public String getErrorMessage() { return errorMessage; }
+    
+    // Get log count for a specific tour
+    public int getTourLogCount(Long tourId) {
+        return tourLogService.getTourLogCountByTourId(tourId).intValue();
+    }
 
     @Override
     public String getTitle() { return "Tour Statistics"; }
@@ -71,14 +76,18 @@ public class TourStatisticsViewModel extends BaseViewModel {
     @Override
     public void dispose() {}
 
-    /**
-     * Returns a map from TourDTO to a stats object (average time, distance, rating) for each tour.
-     */
+    // Method to refresh statistics when tour logs change
+    public void refreshStatistics() {
+        loadData();
+    }
+
+    // Returns a map from TourDTO to a stats object for each tour.
     public Map<TourDTO, TourStats> getTourStats() {
         List<TourDTO> tours = tourService.getAllTours();
         List<TourLogDTO> logs = tourLogService.getAllTourLogs();
         Map<Long, List<TourLogDTO>> logsByTour = logs.stream().collect(Collectors.groupingBy(TourLogDTO::getTourId));
         Map<TourDTO, TourStats> stats = new HashMap<>();
+
         for (TourDTO tour : tours) {
             List<TourLogDTO> tourLogs = logsByTour.getOrDefault(tour.getId(), List.of());
             double avgTime = tourLogs.stream().mapToDouble(l -> l.getTotalTime() != null ? l.getTotalTime() : 0.0).average().orElse(0.0);

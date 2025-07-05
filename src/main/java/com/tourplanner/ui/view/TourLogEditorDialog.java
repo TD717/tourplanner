@@ -36,6 +36,10 @@ public class TourLogEditorDialog extends Stage {
     public TourLogEditorDialog() {}
 
     public static Optional<TourLogDTO> showDialog(TourLogDTO existing, TourService tourService) {
+        return showDialog(existing, tourService, null);
+    }
+    
+    public static Optional<TourLogDTO> showDialog(TourLogDTO existing, TourService tourService, TourDTO preSelectedTour) {
         try {
             FXMLLoader loader = new FXMLLoader(TourLogEditorDialog.class.getResource("/com/tourplanner/fxml/tourlogeditordialog.fxml"));
             Stage dialogStage = new Stage();
@@ -45,7 +49,12 @@ public class TourLogEditorDialog extends Stage {
             TourLogEditorDialog controller = loader.getController();
             controller.tourService = tourService;
             controller.populateTourComboBox();
-            if (existing != null) controller.setFields(existing);
+            if (existing != null) {
+                controller.setFields(existing);
+            } else if (preSelectedTour != null) {
+                // Pre-select the tour if provided
+                controller.tourComboBox.setValue(preSelectedTour);
+            }
             dialogStage.showAndWait();
             return Optional.ofNullable(controller.result);
         } catch (Exception e) {
@@ -108,7 +117,8 @@ public class TourLogEditorDialog extends Stage {
         
         if (log.getDateTime() != null) {
             datePicker.setValue(log.getDateTime().toLocalDate());
-            timeField.setText(log.getDateTime().toLocalTime().toString());
+            // Format time as HH:mm for better user experience
+            timeField.setText(log.getDateTime().toLocalTime().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm")));
         }
         commentField.setText(log.getComment());
         difficultySpinner.getValueFactory().setValue(log.getDifficulty() != null ? log.getDifficulty().intValue() : 3);
@@ -122,6 +132,12 @@ public class TourLogEditorDialog extends Stage {
         difficultySpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 5, 3));
         ratingSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 5, 3));
         errorLabel.setText("");
+        
+        // Set default date to today
+        datePicker.setValue(LocalDate.now());
+        
+        // Set default time to current time
+        timeField.setText(LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm")));
     }
 
     @FXML
@@ -136,7 +152,21 @@ public class TourLogEditorDialog extends Stage {
             if (date == null) throw new Exception("Date is required");
             String timeStr = timeField.getText().trim();
             if (timeStr.isEmpty()) throw new Exception("Time is required");
-            LocalTime time = LocalTime.parse(timeStr);
+            
+            // Parse time with proper format (HH:mm)
+            LocalTime time;
+            try {
+                // First try the default format
+                time = LocalTime.parse(timeStr);
+            } catch (Exception e) {
+                try {
+                    // Try parsing with HH:mm format
+                    time = LocalTime.parse(timeStr, java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
+                } catch (Exception e2) {
+                    throw new Exception("Invalid time format. Please use HH:mm (e.g., 14:30)");
+                }
+            }
+            
             String comment = commentField.getText().trim();
             if (comment.isEmpty()) throw new Exception("Comment is required");
             int difficulty = difficultySpinner.getValue();
@@ -144,6 +174,7 @@ public class TourLogEditorDialog extends Stage {
             double totalTime = Double.parseDouble(totalTimeField.getText().trim());
             int rating = ratingSpinner.getValue();
             
+            // Create the result with the proper ID (editingLogId for edit mode, null for new)
             result = new TourLogDTO(editingLogId, selectedTour.getId(), LocalDateTime.of(date, time), comment, (double)difficulty, distance, totalTime, (double)rating);
             ((Stage)saveBtn.getScene().getWindow()).close();
         } catch (Exception e) {

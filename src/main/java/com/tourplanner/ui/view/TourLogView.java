@@ -84,12 +84,22 @@ public class TourLogView {
 
     @FXML
     private void onAdd() {
-        TourLogEditorDialog.showDialog(null, tourService).ifPresent(log -> {
+        // Get the currently selected tour from the view model
+        TourDTO currentTour = viewModel != null ? viewModel.getSelectedTour() : null;
+        
+        TourLogEditorDialog.showDialog(null, tourService, currentTour).ifPresent(log -> {
             if (viewModel != null) {
                 viewModel.addTourLog(log);
+                // Refresh the table with the updated data
                 logTable.setItems(FXCollections.observableArrayList(viewModel.getTourLogs()));
-                setViewModel(this.viewModel);
                 updateTourInfo();
+                
+                // Clear any error messages
+                if (viewModel.getErrorMessage().isEmpty()) {
+                    errorLabel.setText("");
+                } else {
+                    errorLabel.setText(viewModel.getErrorMessage());
+                }
             }
         });
     }
@@ -101,9 +111,16 @@ public class TourLogView {
             TourLogDTO oldLog = logTable.getItems().get(idx);
             TourLogEditorDialog.showDialog(oldLog, tourService).ifPresent(newLog -> {
                 viewModel.updateTourLog(idx, newLog);
+                // Refresh the table with the updated data
                 logTable.setItems(FXCollections.observableArrayList(viewModel.getTourLogs()));
-                setViewModel(this.viewModel);
                 updateTourInfo();
+                
+                // Clear any error messages
+                if (viewModel.getErrorMessage().isEmpty()) {
+                    errorLabel.setText("");
+                } else {
+                    errorLabel.setText(viewModel.getErrorMessage());
+                }
             });
         }
     }

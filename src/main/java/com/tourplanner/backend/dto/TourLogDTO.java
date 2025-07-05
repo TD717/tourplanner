@@ -55,20 +55,40 @@ public class TourLogDTO {
         return dateTime;
     }
 
+    public void setDateTime(LocalDateTime dateTime) {
+        this.dateTime = dateTime;
+    }
+
     public String getComment() {
         return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
     public Double getDifficulty() {
         return difficulty;
     }
 
+    public void setDifficulty(Double difficulty) {
+        this.difficulty = difficulty;
+    }
+
     public Double getTotalDistance() {
         return totalDistance;
     }
 
+    public void setTotalDistance(Double totalDistance) {
+        this.totalDistance = totalDistance;
+    }
+
     public Double getTotalTime() {
         return totalTime;
+    }
+
+    public void setTotalTime(Double totalTime) {
+        this.totalTime = totalTime;
     }
 
     public Double getRating() {

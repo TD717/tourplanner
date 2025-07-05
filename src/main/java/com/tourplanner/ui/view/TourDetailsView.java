@@ -13,10 +13,7 @@ import javafx.scene.layout.Pane;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
-/**
- * View controller for Tour Details following MVVM pattern.
- * Displays detailed information about a selected tour with interactive map.
- */
+// View controller for Tour Details following MVVM pattern.
 public class TourDetailsView {
 
     private static final Logger logger = Logger.getLogger(TourDetailsView.class.getName());
@@ -33,23 +30,17 @@ public class TourDetailsView {
     private WebView mapView;
     private RouteData currentRoute;
 
-    /**
-     * No-arg constructor required for FXML loading.
-     */
+    // No-arg constructor required for FXML loading.
     public TourDetailsView() {
         // RouteService will be injected via setRouteService method
     }
 
-    /**
-     * Constructor with RouteService dependency (for manual instantiation).
-     */
+    // Constructor with RouteService dependency (for manual instantiation).
     public TourDetailsView(RouteService routeService) {
         this.routeService = routeService;
     }
 
-    /**
-     * Set the RouteService dependency (called by ViewFactory).
-     */
+    // Set the RouteService dependency (called by ViewFactory).
     public void setRouteService(RouteService routeService) {
         this.routeService = routeService;
     }
@@ -57,58 +48,36 @@ public class TourDetailsView {
     @FXML
     private void initialize() {
         try {
-            // Set default placeholder image
-            mapImage.setImage(new Image("https://via.placeholder.com/400x200.png?text=Map+Preview"));
-            
             // Initialize WebView for interactive map
             if (mapContainer != null) {
                 mapView = new WebView();
                 mapView.setPrefSize(600, 400);
                 mapContainer.getChildren().add(mapView);
-                mapView.setVisible(false); // Hide initially
+                mapView.setVisible(false);
             }
-            
             logger.fine("TourDetailsView initialized");
         } catch (Exception e) {
             logger.log(Level.WARNING, "Failed to initialize TourDetailsView", e);
         }
     }
 
-    /**
-     * Bind this view to the selected tour property from the tour list.
-     */
+    // Bind this view to the selected tour property from the tour list.
     public void bindTo(javafx.beans.property.ReadOnlyObjectProperty<TourDTO> selectedTourProperty) {
         selectedTourProperty.addListener((observable, oldValue, newValue) -> {
             show(newValue);
         });
     }
 
-    /**
-     * Clear all tour details display.
-     */
+    // Clear all tour details display.
     private void clear() {
         tourNameLabel.setText("Select a tour to view details");
         descriptionLabel.setText("Description: No tour selected");
         transportLabel.setText("Transport: --");
         distanceLabel.setText("Distance: -- km");
         timeLabel.setText("Estimated Time: --");
-        
-        // Reset to placeholder image
-        try {
-            mapImage.setImage(new Image("https://via.placeholder.com/400x200.png?text=Map+Preview"));
-            if (mapView != null) {
-                mapView.setVisible(false);
-            }
-        } catch (Exception e) {
-            logger.log(Level.WARNING, "Failed to load placeholder image", e);
-        }
     }
 
-    /**
-     * Display tour details.
-     * 
-     * @param tour Tour to display
-     */
+    // Display tour details.
     private void show(TourDTO tour) {
         if (tour == null) {
             clear();
@@ -125,11 +94,7 @@ public class TourDetailsView {
             // Show interactive map if route service is available
             if (routeService != null && mapView != null) {
                 showInteractiveMap(tour);
-            } else {
-                // Fallback to placeholder image
-                mapImage.setImage(new Image("https://via.placeholder.com/400x200.png?text=Map+Preview"));
             }
-            
             logger.fine("Displayed tour details for: " + tour.getName());
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error displaying tour details", e);
@@ -137,9 +102,7 @@ public class TourDetailsView {
         }
     }
 
-    /**
-     * Show interactive map for the tour.
-     */
+    // Show interactive map for the tour
     private void showInteractiveMap(TourDTO tour) {
         try {
             String fromLocation = tour.getFromLocation() != null ? tour.getFromLocation() : "Vienna, Austria";
@@ -174,24 +137,7 @@ public class TourDetailsView {
         }
     }
 
-    /**
-     * Show static map image as fallback.
-     */
-    private void showStaticMap(TourDTO tour) {
-        try {
-            mapImage.setImage(new Image("https://via.placeholder.com/600x400.png?text=Route+Map+for+" + tour.getName()));
-            mapImage.setVisible(true);
-            if (mapView != null) {
-                mapView.setVisible(false);
-            }
-        } catch (Exception e) {
-            logger.log(Level.WARNING, "Failed to load static map", e);
-        }
-    }
-
-    /**
-     * Build Leaflet HTML for interactive map.
-     */
+    // Build Leaflet HTML for interactive map.
     private String buildLeafletHtml(RouteData route) {
         StringBuilder coords = new StringBuilder();
         for (RouteData.Coordinate c : route.getCoordinates()) {

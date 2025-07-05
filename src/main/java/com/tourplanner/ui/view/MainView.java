@@ -14,10 +14,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
-/**
- * Main view controller that manages the overall application layout.
- * Uses ViewFactory to create child views following MVVM pattern.
- */
+// Main view controller that manages the overall application layout. Uses ViewFactory to create child views following MVVM pattern.
 public class MainView {
 
     @FXML private BorderPane root;
@@ -33,23 +30,17 @@ public class MainView {
     private Node tourDetailsRoot;
     private Node defaultCenterView;
 
-    /**
-     * No-arg constructor required for FXML loading.
-     */
+    // No-arg constructor required for FXML loading.
     public MainView() {
         // ViewFactory will be injected via setViewFactory method
     }
 
-    /**
-     * Constructor with ViewFactory dependency (for manual instantiation).
-     */
+    // Constructor with ViewFactory dependency
     public MainView(ViewFactory viewFactory) {
         this.viewFactory = viewFactory;
     }
 
-    /**
-     * Set the ViewFactory dependency (called by ViewFactory).
-     */
+    // Set the ViewFactory dependency
     public void setViewFactory(ViewFactory viewFactory) {
         this.viewFactory = viewFactory;
         initializeViews();
@@ -57,7 +48,6 @@ public class MainView {
 
     @FXML
     private void initialize() {
-        // FXML fields are now available, but wait for ViewFactory to be set
         if (viewFactory != null) {
             initializeViews();
         }
@@ -150,8 +140,10 @@ public class MainView {
         try {
             TourStatisticsViewModel statsViewModel = viewFactory.getTourStatisticsViewModel();
             TourStatisticsView statsView = new TourStatisticsView(statsViewModel);
+
             // Create a container node for the statistics view
             javafx.scene.layout.AnchorPane statsPane = new javafx.scene.layout.AnchorPane();
+
             // Use a new Stage to get the Scene, then extract the root
             javafx.stage.Stage dummyStage = new javafx.stage.Stage();
             statsView.show(dummyStage);
@@ -195,7 +187,7 @@ public class MainView {
             // Use the stored root node
             Node logRoot = tourLogRoot;
             if (logRoot == null) {
-                // If the root is null, create it from the FXML
+                // If the root is null, it is created from the FXML
                 var logViewPair = viewFactory.createView("tourlog-view.fxml", TourLogViewModel.class);
                 logRoot = logViewPair.root();
                 tourLogRoot = logRoot;
@@ -223,10 +215,10 @@ public class MainView {
                 tourDetailsView = (TourDetailsView) detailsViewPair.controller();
             }
             
-            // Use the stored root node
+            // We use the stored root node
             Node detailsRoot = tourDetailsRoot;
             if (detailsRoot == null) {
-                // If the root is null, create it from the FXML
+                // If the root is null, it is created from the FXML
                 var detailsViewPair = viewFactory.createViewWithoutViewModel("tourdetails-view.fxml");
                 detailsRoot = detailsViewPair.root();
                 tourDetailsRoot = detailsRoot;
@@ -269,7 +261,7 @@ public class MainView {
 
     public void show(Stage stage) {
         try {
-            // Load the FXML layout (controller is already specified in FXML)
+            // Load the FXML layout, controller is already specified in FXML
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/tourplanner/fxml/main-view.fxml"));
             BorderPane root = loader.load();
             

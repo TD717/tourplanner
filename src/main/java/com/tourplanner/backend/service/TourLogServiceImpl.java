@@ -45,12 +45,21 @@ public class TourLogServiceImpl implements TourLogService {
     @Override
     public TourLogDTO updateTourLog(TourLogDTO dto) {
         TourLog log = tourLogRepository.findById(dto.getId()).orElseThrow(() -> new IllegalArgumentException("TourLog not found"));
+        
+        // Update all fields
         log.setDateTime(dto.getDateTime());
         log.setComment(dto.getComment());
         log.setDifficulty(dto.getDifficulty());
         log.setTotalDistance(dto.getTotalDistance());
         log.setTotalTime(dto.getTotalTime());
         log.setRating(dto.getRating());
+        
+        // Update tour if it has changed
+        if (dto.getTourId() != null && (log.getTour() == null || !log.getTour().getId().equals(dto.getTourId()))) {
+            Tour newTour = tourRepository.findById(dto.getTourId()).orElseThrow(() -> new IllegalArgumentException("Tour not found"));
+            log.setTour(newTour);
+        }
+        
         TourLog saved = tourLogRepository.save(log);
         return toDTO(saved);
     }
