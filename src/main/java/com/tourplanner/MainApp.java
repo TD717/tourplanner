@@ -34,6 +34,9 @@ public class MainApp extends Application {
 
     @Override
     public void stop() {
+        if (viewFactory != null) {
+            viewFactory.dispose();
+        }
         if (springContext != null) {
             springContext.close();
         }

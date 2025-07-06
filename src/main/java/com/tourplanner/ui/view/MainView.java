@@ -166,41 +166,41 @@ public class MainView {
         try {
             if (tourLogView == null) {
                 var logViewPair = viewFactory.createView("tourlog-view.fxml", TourLogViewModel.class);
-                Node logRoot = logViewPair.root();
+                tourLogRoot = logViewPair.root();
                 tourLogView = (TourLogView) logViewPair.controller();
                 tourLogViewModel = viewFactory.getTourLogViewModel();
                 tourLogView.setViewModel(tourLogViewModel);
+                
                 // Connect tour selection if not already connected
                 if (tourListView != null) {
                     tourListView.selectedTourProperty().addListener((obs, oldVal, newVal) -> {
                         tourLogViewModel.setSelectedTour(newVal);
                     });
-                    // Ensure a tour is selected in the ListView
+                    
+                    // Check if there are any tours available
                     ListView<com.tourplanner.backend.dto.TourDTO> listView = tourListView.getTourList();
-                    if (listView.getSelectionModel().getSelectedItem() == null && !listView.getItems().isEmpty()) {
-                        listView.getSelectionModel().selectFirst();
+                    if (listView.getItems().isEmpty()) {
+                        // No tours available
+                        tourLogViewModel.setSelectedTour(null);
+                    } else {
+                        // Ensure a tour is selected in the ListView
+                        if (listView.getSelectionModel().getSelectedItem() == null) {
+                            listView.getSelectionModel().selectFirst();
+                        }
+                        tourLogViewModel.setSelectedTour(listView.getSelectionModel().getSelectedItem());
                     }
-                    tourLogViewModel.setSelectedTour(listView.getSelectionModel().getSelectedItem());
+                } else {
+                    // No tour list view available, try to load all logs
+                    tourLogViewModel.loadData();
                 }
             }
             
-            // Use the stored root node
-            Node logRoot = tourLogRoot;
-            if (logRoot == null) {
-                // If the root is null, it is created from the FXML
-                var logViewPair = viewFactory.createView("tourlog-view.fxml", TourLogViewModel.class);
-                logRoot = logViewPair.root();
-                tourLogRoot = logRoot;
-                tourLogView = (TourLogView) logViewPair.controller();
-                tourLogView.setViewModel(tourLogViewModel);
-            }
-            
             centerContainer.getChildren().clear();
-            AnchorPane.setTopAnchor(logRoot, 0.0);
-            AnchorPane.setBottomAnchor(logRoot, 0.0);
-            AnchorPane.setLeftAnchor(logRoot, 0.0);
-            AnchorPane.setRightAnchor(logRoot, 0.0);
-            centerContainer.getChildren().add(logRoot);
+            AnchorPane.setTopAnchor(tourLogRoot, 0.0);
+            AnchorPane.setBottomAnchor(tourLogRoot, 0.0);
+            AnchorPane.setLeftAnchor(tourLogRoot, 0.0);
+            AnchorPane.setRightAnchor(tourLogRoot, 0.0);
+            centerContainer.getChildren().add(tourLogRoot);
             
         } catch (Exception e) {
             new Alert(Alert.AlertType.ERROR, "Failed to load Tour Logs: " + e.getMessage()).showAndWait();

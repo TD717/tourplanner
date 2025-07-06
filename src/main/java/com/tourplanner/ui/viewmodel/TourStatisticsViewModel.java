@@ -4,6 +4,12 @@ import com.tourplanner.backend.dto.TourDTO;
 import com.tourplanner.backend.dto.TourLogDTO;
 import com.tourplanner.backend.service.TourLogService;
 import com.tourplanner.backend.service.TourService;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 
 import java.util.Comparator;
 import java.util.List;
@@ -16,13 +22,12 @@ public class TourStatisticsViewModel extends BaseViewModel {
     private final TourService tourService;
     private final TourLogService tourLogService;
 
-    private int totalTours;
-    private int totalLogs;
-    private double averageDistance;
-    private double averageRating;
-    private TourDTO mostPopularTour;
-    private int mostPopularTourLogCount;
-    private String errorMessage = "";
+    private final IntegerProperty totalTours = new SimpleIntegerProperty(0);
+    private final IntegerProperty totalLogs = new SimpleIntegerProperty(0);
+    private final DoubleProperty averageDistance = new SimpleDoubleProperty(0.0);
+    private final DoubleProperty averageRating = new SimpleDoubleProperty(0.0);
+    private final ObjectProperty<TourDTO> mostPopularTour = new SimpleObjectProperty<>();
+    private final IntegerProperty mostPopularTourLogCount = new SimpleIntegerProperty(0);
 
     public TourStatisticsViewModel(TourService tourService, TourLogService tourLogService) {
         this.tourService = tourService;
@@ -36,34 +41,52 @@ public class TourStatisticsViewModel extends BaseViewModel {
 
     @Override
     public void loadData() {
+        setLoading(true);
+        clearError();
         try {
             List<TourDTO> tours = tourService.getAllTours();
             List<TourLogDTO> logs = tourLogService.getAllTourLogs();
-            totalTours = tours.size();
-            totalLogs = logs.size();
-            averageDistance = tours.stream().mapToDouble(TourDTO::getDistance).average().orElse(0.0);
-            averageRating = logs.stream().mapToDouble(l -> l.getRating() != null ? l.getRating() : 0.0).average().orElse(0.0);
-            Optional<TourDTO> mostPopular = tours.stream().max(Comparator.comparingInt(t -> tourLogService.getTourLogCountByTourId(t.getId()).intValue()));
+            
+            totalTours.set(tours.size());
+            totalLogs.set(logs.size());
+            averageDistance.set(tours.stream().mapToDouble(TourDTO::getDistance).average().orElse(0.0));
+            averageRating.set(logs.stream().mapToDouble(l -> l.getRating() != null ? l.getRating() : 0.0).average().orElse(0.0));
+            
+            Optional<TourDTO> mostPopular = tours.stream()
+                .max(Comparator.comparingInt(t -> tourLogService.getTourLogCountByTourId(t.getId()).intValue()));
+            
             if (mostPopular.isPresent()) {
-                mostPopularTour = mostPopular.get();
-                mostPopularTourLogCount = tourLogService.getTourLogCountByTourId(mostPopularTour.getId()).intValue();
+                mostPopularTour.set(mostPopular.get());
+                mostPopularTourLogCount.set(tourLogService.getTourLogCountByTourId(mostPopular.get().getId()).intValue());
             } else {
-                mostPopularTour = null;
-                mostPopularTourLogCount = 0;
+                mostPopularTour.set(null);
+                mostPopularTourLogCount.set(0);
             }
-            errorMessage = "";
         } catch (Exception e) {
-            errorMessage = "Failed to load statistics: " + e.getMessage();
+            setError("Failed to load statistics: " + e.getMessage());
+        } finally {
+            setLoading(false);
         }
     }
 
-    public int getTotalTours() { return totalTours; }
-    public int getTotalLogs() { return totalLogs; }
-    public double getAverageDistance() { return averageDistance; }
-    public double getAverageRating() { return averageRating; }
-    public TourDTO getMostPopularTour() { return mostPopularTour; }
-    public int getMostPopularTourLogCount() { return mostPopularTourLogCount; }
-    public String getErrorMessage() { return errorMessage; }
+    // Getters
+    public int getTotalTours() { return totalTours.get(); }
+    public IntegerProperty totalToursProperty() { return totalTours; }
+    
+    public int getTotalLogs() { return totalLogs.get(); }
+    public IntegerProperty totalLogsProperty() { return totalLogs; }
+    
+    public double getAverageDistance() { return averageDistance.get(); }
+    public DoubleProperty averageDistanceProperty() { return averageDistance; }
+    
+    public double getAverageRating() { return averageRating.get(); }
+    public DoubleProperty averageRatingProperty() { return averageRating; }
+    
+    public TourDTO getMostPopularTour() { return mostPopularTour.get(); }
+    public ObjectProperty<TourDTO> mostPopularTourProperty() { return mostPopularTour; }
+    
+    public int getMostPopularTourLogCount() { return mostPopularTourLogCount.get(); }
+    public IntegerProperty mostPopularTourLogCountProperty() { return mostPopularTourLogCount; }
     
     // Get log count for a specific tour
     public int getTourLogCount(Long tourId) {
@@ -74,7 +97,14 @@ public class TourStatisticsViewModel extends BaseViewModel {
     public String getTitle() { return "Tour Statistics"; }
 
     @Override
-    public void dispose() {}
+    public void dispose() {
+        totalTours.set(0);
+        totalLogs.set(0);
+        averageDistance.set(0.0);
+        averageRating.set(0.0);
+        mostPopularTour.set(null);
+        mostPopularTourLogCount.set(0);
+    }
 
     // Method to refresh statistics when tour logs change
     public void refreshStatistics() {

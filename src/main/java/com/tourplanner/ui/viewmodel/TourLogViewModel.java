@@ -5,18 +5,19 @@ import com.tourplanner.backend.dto.TourDTO;
 import com.tourplanner.backend.service.TourLogService;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class TourLogViewModel extends BaseViewModel {
     private final TourLogService tourLogService;
-    private final List<TourLogDTO> tourLogs = new ArrayList<>();
+    private final ObservableList<TourLogDTO> tourLogs = FXCollections.observableArrayList();
     private final ObjectProperty<TourDTO> selectedTourProperty = new SimpleObjectProperty<>();
     private TourDTO selectedTour;
     private TourLogDTO selectedTourLog;
-    private String errorMessage = "";
-    private boolean loading = false;
     private TourStatisticsViewModel statisticsViewModel; // Reference to statistics view model
 
     public TourLogViewModel(TourLogService tourLogService) {
@@ -47,15 +48,28 @@ public class TourLogViewModel extends BaseViewModel {
     }
 
     public void loadLogsForTour(Long tourId) {
-        loading = true;
+        setLoading(true);
+        clearError();
         try {
             tourLogs.clear();
-            tourLogs.addAll(tourLogService.getTourLogsByTourId(tourId));
-            errorMessage = "";
+            List<TourLogDTO> logs = tourLogService.getTourLogsByTourId(tourId);
+            tourLogs.addAll(logs);
+            if (logs.isEmpty()) {
+                setError("No tour logs found for this tour. You can add logs using the 'Add Log' button.");
+            }
         } catch (Exception e) {
-            errorMessage = "Failed to load tour logs: " + e.getMessage();
+            setError("Failed to load tour logs: " + e.getMessage());
         } finally {
-            loading = false;
+            setLoading(false);
+        }
+    }
+
+    public boolean hasAnyTourLogs() {
+        try {
+            List<TourLogDTO> allLogs = tourLogService.getAllTourLogs();
+            return !allLogs.isEmpty();
+        } catch (Exception e) {
+            return false;
         }
     }
 
@@ -64,7 +78,7 @@ public class TourLogViewModel extends BaseViewModel {
             // If no tour ID is provided, use the currently selected tour
             if (log.getTourId() == null) {
                 if (selectedTour == null) {
-                    errorMessage = "No tour selected and no tour ID provided";
+                    setError("No tour selected and no tour ID provided");
                     return;
                 }
                 log.setTourId(selectedTour.getId());
@@ -73,7 +87,6 @@ public class TourLogViewModel extends BaseViewModel {
             TourLogDTO saved = tourLogService.createTourLog(log);
             
             // Only add to the current list if it's for the currently selected tour
-            // or if no tour is currently selected (show all logs)
             if (selectedTour == null || selectedTour.getId().equals(saved.getTourId())) {
                 tourLogs.add(saved);
             }
@@ -83,9 +96,9 @@ public class TourLogViewModel extends BaseViewModel {
                 statisticsViewModel.refreshStatistics();
             }
             
-            errorMessage = "";
+            clearError();
         } catch (Exception e) {
-            errorMessage = "Failed to add tour log: " + e.getMessage();
+            setError("Failed to add tour log: " + e.getMessage());
         }
     }
 
@@ -93,7 +106,7 @@ public class TourLogViewModel extends BaseViewModel {
         try {
             // Ensure the log has a valid ID for updating
             if (log.getId() == null) {
-                errorMessage = "Cannot update log without ID";
+                setError("Cannot update log without ID");
                 return;
             }
             
@@ -110,9 +123,9 @@ public class TourLogViewModel extends BaseViewModel {
                 statisticsViewModel.refreshStatistics();
             }
             
-            errorMessage = "";
+            clearError();
         } catch (Exception e) {
-            errorMessage = "Failed to update tour log: " + e.getMessage();
+            setError("Failed to update tour log: " + e.getMessage());
         }
     }
 
@@ -127,14 +140,15 @@ public class TourLogViewModel extends BaseViewModel {
                 statisticsViewModel.refreshStatistics();
             }
             
-            errorMessage = "";
+            clearError();
         } catch (Exception e) {
-            errorMessage = "Failed to delete tour log: " + e.getMessage();
+            setError("Failed to delete tour log: " + e.getMessage());
         }
     }
 
     public void searchTourLogs(String searchText) {
-        loading = true;
+        setLoading(true);
+        clearError();
         try {
             if (selectedTour != null) {
                 tourLogs.clear();
@@ -146,11 +160,10 @@ public class TourLogViewModel extends BaseViewModel {
                 tourLogs.clear();
                 tourLogs.addAll(tourLogService.searchTourLogs(searchText));
             }
-            errorMessage = "";
         } catch (Exception e) {
-            errorMessage = "Failed to search tour logs: " + e.getMessage();
+            setError("Failed to search tour logs: " + e.getMessage());
         } finally {
-            loading = false;
+            setLoading(false);
         }
     }
 
@@ -162,7 +175,7 @@ public class TourLogViewModel extends BaseViewModel {
         }
     }
 
-    public List<TourLogDTO> getTourLogs() {
+    public ObservableList<TourLogDTO> getTourLogs() {
         return tourLogs;
     }
 
@@ -172,18 +185,6 @@ public class TourLogViewModel extends BaseViewModel {
 
     public void setSelectedTourLog(TourLogDTO selectedTourLog) {
         this.selectedTourLog = selectedTourLog;
-    }
-
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-
-    public boolean isLoading() {
-        return loading;
-    }
-
-    public void clearError() {
-        errorMessage = "";
     }
 
     @Override
@@ -205,19 +206,24 @@ public class TourLogViewModel extends BaseViewModel {
 
     @Override
     public void loadData() {
-        loading = true;
+        setLoading(true);
+        clearError();
         try {
             if (selectedTour != null) {
                 loadLogsForTour(selectedTour.getId());
             } else {
+                // When no tour is selected, show all logs or clear the list
                 tourLogs.clear();
-                tourLogs.addAll(tourLogService.getAllTourLogs());
+                List<TourLogDTO> allLogs = tourLogService.getAllTourLogs();
+                tourLogs.addAll(allLogs);
+                if (allLogs.isEmpty()) {
+                    setError("No tour logs found. Please select a tour or add some tour logs.");
+                }
             }
-            errorMessage = "";
         } catch (Exception e) {
-            errorMessage = "Failed to load tour logs: " + e.getMessage();
+            setError("Failed to load tour logs: " + e.getMessage());
         } finally {
-            loading = false;
+            setLoading(false);
         }
     }
 } 

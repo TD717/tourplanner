@@ -13,6 +13,7 @@ import java.util.Map;
 
 import com.tourplanner.ui.viewmodel.TourLogViewModel;
 import com.tourplanner.ui.viewmodel.TourListViewModel;
+import com.tourplanner.ui.viewmodel.BaseViewModel;
 import com.tourplanner.ui.view.TourStatisticsView;
 import com.tourplanner.ui.view.MainView;
 import com.tourplanner.backend.service.TourLogService;
@@ -27,7 +28,6 @@ import com.tourplanner.backend.service.ImportExportService;
 public class ViewFactory {
 
     private final Map<String, Object> viewModelCache = new HashMap<>();
-    private final Map<String, Stage> stageCache = new HashMap<>();
     private final TourLogService tourLogService;
     private final TourService tourService;
     private final RouteService routeService;
@@ -36,7 +36,6 @@ public class ViewFactory {
     private final ImportExportService importExportService;
     private TourLogViewModel tourLogViewModel;
     private TourStatisticsViewModel tourStatisticsViewModel;
-    private TourStatisticsView tourStatisticsView;
 
     public ViewFactory(ConfigurableApplicationContext applicationContext, TourLogService tourLogService, TourService tourService, RouteService routeService, ImportExportService importExportService) {
         this.applicationContext = applicationContext;
@@ -130,6 +129,11 @@ public class ViewFactory {
                         .getMethod("setViewModel", viewModelClass);
                 setViewModelMethod.invoke(controller, viewModel);
             } catch (NoSuchMethodException e) {
+                // Log warning if controller doesn't support ViewModel injection
+                System.err.println("Warning: Controller " + controller.getClass().getSimpleName() + 
+                                 " does not have setViewModel method for " + viewModelClass.getSimpleName());
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to inject ViewModel into controller", e);
             }
             return new ViewPair(root, controller);
         } catch (IOException ex) {
@@ -157,6 +161,8 @@ public class ViewFactory {
                 viewModel = (T) new TourLogViewModel(tourLogService);
             } else if (viewModelClass == TourListViewModel.class) {
                 viewModel = (T) new TourListViewModel(tourService);
+            } else if (viewModelClass == TourStatisticsViewModel.class) {
+                viewModel = (T) new TourStatisticsViewModel(tourService, tourLogService);
             } else {
                 viewModel = viewModelClass.getDeclaredConstructor().newInstance();
             }
@@ -204,4 +210,28 @@ public class ViewFactory {
     }
 
     public record ViewPair(Parent root, Object controller) { }
+    
+    /**
+     * Clears the ViewModel cache and disposes of all ViewModels.
+     * Should be called when the application is shutting down.
+     */
+    public void dispose() {
+        // Dispose all ViewModels
+        for (Object viewModel : viewModelCache.values()) {
+            if (viewModel instanceof BaseViewModel) {
+                ((BaseViewModel) viewModel).dispose();
+            }
+        }
+        viewModelCache.clear();
+        
+        // Clear singleton ViewModels
+        if (tourLogViewModel != null) {
+            tourLogViewModel.dispose();
+            tourLogViewModel = null;
+        }
+        if (tourStatisticsViewModel != null) {
+            tourStatisticsViewModel.dispose();
+            tourStatisticsViewModel = null;
+        }
+    }
 }

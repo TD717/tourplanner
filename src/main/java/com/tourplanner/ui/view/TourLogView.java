@@ -41,8 +41,6 @@ public class TourLogView {
         editBtn.disableProperty().bind(logTable.getSelectionModel().selectedItemProperty().isNull());
         deleteBtn.disableProperty().bind(logTable.getSelectionModel().selectedItemProperty().isNull());
         updateTourInfo();
-        // Ensure the table shows the correct logs for the selected tour
-        logTable.setItems(FXCollections.observableArrayList(viewModel.getTourLogs()));
     }
     public void setTourService(TourService tourService) { this.tourService = tourService; }
 
@@ -55,22 +53,33 @@ public class TourLogView {
         distanceCol.setCellValueFactory(cell -> new SimpleStringProperty(String.valueOf(cell.getValue().getTotalDistance())));
         timeCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getFormattedTotalTime()));
         ratingCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getRatingDescription()));
+
+        if (viewModel != null) {
+            bindToViewModel();
+        }
     }
 
     private void bindToViewModel() {
         if (viewModel == null) return;
-        logTable.setItems(FXCollections.observableArrayList(viewModel.getTourLogs()));
-        errorLabel.textProperty().set(viewModel.getErrorMessage());
+        // Bind to the observable list directly
+        logTable.setItems(viewModel.getTourLogs());
+        // Bind error message
+        errorLabel.textProperty().bind(viewModel.errorMessageProperty());
         updateTourInfo();
     }
     
     private void updateTourInfo() {
         if (viewModel != null && viewModel.getSelectedTour() != null) {
             TourDTO tour = viewModel.getSelectedTour();
-            tourInfoLabel.setText("Tour: " + tour.getName() + " (" + viewModel.getTourLogs().size() + " logs)");
-            tourInfoLabel.setStyle("-fx-text-fill: #2E7D32; -fx-font-weight: bold;");
+            int logCount = viewModel.getTourLogs().size();
+            tourInfoLabel.setText("Tour: " + tour.getName() + " (" + logCount + " logs)");
+            if (logCount == 0) {
+                tourInfoLabel.setStyle("-fx-text-fill: #FF9800; -fx-font-weight: bold;");
+            } else {
+                tourInfoLabel.setStyle("-fx-text-fill: #2E7D32; -fx-font-weight: bold;");
+            }
         } else {
-            tourInfoLabel.setText("Select a tour to view its logs");
+            tourInfoLabel.setText("Select a tour from the list to view its logs");
             tourInfoLabel.setStyle("-fx-text-fill: gray;");
         }
     }
@@ -78,7 +87,6 @@ public class TourLogView {
     @FXML
     private void onSearch() {
         if (viewModel != null) viewModel.searchTourLogs(searchField.getText());
-        logTable.setItems(FXCollections.observableArrayList(viewModel.getTourLogs()));
         updateTourInfo();
     }
 
@@ -90,16 +98,7 @@ public class TourLogView {
         TourLogEditorDialog.showDialog(null, tourService, currentTour).ifPresent(log -> {
             if (viewModel != null) {
                 viewModel.addTourLog(log);
-                // Refresh the table with the updated data
-                logTable.setItems(FXCollections.observableArrayList(viewModel.getTourLogs()));
                 updateTourInfo();
-                
-                // Clear any error messages
-                if (viewModel.getErrorMessage().isEmpty()) {
-                    errorLabel.setText("");
-                } else {
-                    errorLabel.setText(viewModel.getErrorMessage());
-                }
             }
         });
     }
@@ -111,16 +110,7 @@ public class TourLogView {
             TourLogDTO oldLog = logTable.getItems().get(idx);
             TourLogEditorDialog.showDialog(oldLog, tourService).ifPresent(newLog -> {
                 viewModel.updateTourLog(idx, newLog);
-                // Refresh the table with the updated data
-                logTable.setItems(FXCollections.observableArrayList(viewModel.getTourLogs()));
                 updateTourInfo();
-                
-                // Clear any error messages
-                if (viewModel.getErrorMessage().isEmpty()) {
-                    errorLabel.setText("");
-                } else {
-                    errorLabel.setText(viewModel.getErrorMessage());
-                }
             });
         }
     }
@@ -139,8 +129,6 @@ public class TourLogView {
             confirmDialog.showAndWait().ifPresent(response -> {
                 if (response == ButtonType.OK) {
                     viewModel.deleteTourLog(idx);
-                    logTable.setItems(FXCollections.observableArrayList(viewModel.getTourLogs()));
-                    setViewModel(this.viewModel);
                     updateTourInfo();
                 }
             });
